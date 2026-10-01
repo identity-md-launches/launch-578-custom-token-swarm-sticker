@@ -16,6 +16,7 @@ contract DeploymentProbe {
     }
 }
 
+/// forge-config: default.fuzz.runs = 1000
 contract SwarmStickerTest is Test {
     uint256 private constant SUPPLY = 1_000_000_000 * 10 ** 18;
     address private constant ALICE = address(0xA11CE);
@@ -348,7 +349,8 @@ contract SwarmStickerTest is Test {
     }
 
     function testFuzzTransferConservesSupply(address recipient, uint256 amount) public {
-        vm.assume(recipient != address(0) && recipient != address(this));
+        recipient = address(uint160(bound(uint160(recipient), 1, type(uint160).max)));
+        if (recipient == address(this)) recipient = ALICE;
         amount = bound(amount, 0, SUPPLY);
         assertTrue(token.transfer(recipient, amount));
         assertEq(token.balanceOf(recipient), amount);
